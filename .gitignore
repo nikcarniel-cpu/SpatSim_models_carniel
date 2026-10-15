@@ -13,3 +13,8 @@ results/
 .DS_Store
 
 Thumbs.db
+
+.cache/
+.built_in_models_*
+.gama_application_workspace
+Hello_world/
