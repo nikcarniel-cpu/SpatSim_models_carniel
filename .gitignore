@@ -1,0 +1,15 @@
+.metadata/
+
+.recommenders/
+
+RemoteSystemsTempFiles/
+
+*.log
+
+results/
+
+*.csv.tmp
+
+.DS_Store
+
+Thumbs.db
