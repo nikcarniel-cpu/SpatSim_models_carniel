@@ -27,8 +27,8 @@ global {
 	float kill_energy_gain <- 20.0;
 	// Amplitude in degrees of the heading change when lions and zebras walk.
 	float walk_amplitude <- 60.0;
-	// Number of cycles that make up one year (1 cycle = 1 week).
-	int cycles_per_year <- 52;
+	// Number of cycles that make up one year (1 cycle = 1 month).
+	int cycles_per_year <- 12;
 	// Age in years at which a lion dies and disappears.
 	int max_age <- 60;
 	// Ages of all living lions, one value per lion.
@@ -109,12 +109,18 @@ species lion skills: [moving] {
 		do die;
 	}
 
-	// Ages the lion by one year every 52 cycles and replaces its previous age by the current age in the list.
+	// Ages the lion by one year every 12 cycles and replaces its previous age by the current age in the list.
+	// When the lion turns 59 it gives birth to one baby lion at its location (age 1, start energy, added to the age list).
 	reflex get_older when: (cycle > 0) and (cycle mod cycles_per_year = 0) {
 		previous_age <- age;
 		age <- age + 1;
 		lion_ages >- previous_age;
 		add age to: lion_ages;
+		if age = 59 {
+			point birth_place <- location;
+			create lion number: 1 with: [location::birth_place, age::1, energy::lion_start_energy];
+			add 1 to: lion_ages;
+		}
 	}
 
 	// Lets the lion die of old age at max_age, removing its age from the list.
@@ -147,14 +153,25 @@ species zebra skills: [moving] {
 		current_cell.biomass <- current_cell.biomass - eaten;
 	}
 
-	// Draws the zebra as a gray triangle of size 2.
+	// Draws the zebra as a black triangle of size 3.
 	aspect default {
-		draw triangle(2) color: #gray;
+		draw triangle(3) color: #black;
 	}
 }
 
 // Experiment showing the grass, lions and zebras.
 experiment Savannah type: gui {
+	// Slider for the grass biomass in kg added to every cell per cycle.
+	parameter "Grass growth (kg per cycle)" var: grass_growth min: 0.0 max: 1.0 step: 0.02 category: "Grass";
+	// Slider for the grass biomass in kg a zebra eats per cycle.
+	parameter "Zebra eating rate (kg per cycle)" var: eating_rate min: 0.0 max: 2.0 step: 0.05 category: "Zebras";
+	// Slider for the distance in cells within which a lion kills a zebra.
+	parameter "Lion kill distance (cells)" var: kill_distance min: 0.0 max: 10.0 step: 0.5 category: "Lions";
+	// Slider for the energy a lion loses per cycle when moving.
+	parameter "Lion energy cost per move" var: move_energy_cost min: 0.0 max: 2.0 step: 0.02 category: "Lions";
+	// Slider for the energy a lion gains for every zebra it kills.
+	parameter "Lion energy gain per kill" var: kill_energy_gain min: 0.0 max: 100.0 step: 1.0 category: "Lions";
+
 	output {
 		// Display of the grass cells with the lions and zebras on top.
 		display map type: 2d {
